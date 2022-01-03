@@ -7,6 +7,7 @@ module.exports = {
         preload: 'src/preload.js',
         nodeIntegration: false,
         contextBridge: true,
+        publish: ['github'],
         appId: "com.neat",
         productName: "Neat",
         mac: {
