@@ -1,5 +1,5 @@
 {
-  "name": "vue3-electron",
+  "name": "neat",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,9 @@
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
-    "postuninstall": "electron-builder install-app-deps"
+    "postuninstall": "electron-builder install-app-deps",
+    "pack": "build --dir",
+    "dist": "electron-builder"
   },
   "main": "background.js",
   "dependencies": {
@@ -28,7 +30,7 @@
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0",
-    "vue-cli-plugin-electron-builder": "~2.1.1"
+    "vue-cli-plugin-electron-builder": "^2.1.1"
   },
   "eslintConfig": {
     "root": true,
@@ -56,5 +58,4 @@
       ]
     }
   }
-
 }
