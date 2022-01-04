@@ -26,6 +26,9 @@ import BaseButton from './BaseButton.vue'
             },
             // label is the directory name
             label: function() {
+                if (this.destination.label !== undefined && this.destination.label !== null){
+                    return this.destination.label
+                }
                 const path_split = this.destination.directory_path.split('/');
                 const last_idx = path_split.length - 1;
                 return path_split[last_idx];

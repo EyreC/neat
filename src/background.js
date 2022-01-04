@@ -3,13 +3,23 @@
 import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
+import { autoUpdater } from "electron-updater"
 const path = require("path");
 const fs = require("fs");
+const os = require("os")
 
 // global state
 let current_file_path = '';
 let target_dirs = [];
 let files_in_source = [];
+let tmp_trash_dest = ''
+
+fs.mkdtemp(path.join(os.tmpdir(), 'trash-'), (err, folder) => {
+  if (err) throw err;
+  tmp_trash_dest = folder
+  target_dirs.push(folder)
+});
+
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -44,11 +54,19 @@ async function createWindow() {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
+    autoUpdater.checkForUpdatesAndNotify()
   }
 }
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
+  // clear folder with deleted items
+  const all_files = fs.readdirSync(tmp_trash_dest);
+  for (const file_name of all_files){
+    const file_path = `${tmp_trash_dest}/${file_name}`
+    fs.unlinkSync(file_path)
+  }
+  fs.rmdirSync(tmp_trash_dest)
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   app.quit()
@@ -77,13 +95,7 @@ app.on('ready', async () => {
   createWindow()
 })
 
-// access fs here
-ipcMain.on("async-message", (event, arg) => {
-  console.log('happens in another process')
-  const res = fs.readdirSync('/Users/EyreCraggs/Documents/Coding/electron-test-folder')
-  const data = res[0];
-  event.reply('async-reply', data)
-});
+
 ipcMain.on("open-target-dialog", async (event) => {
   const res = await dialog.showOpenDialog( { properties: ['openDirectory']})
   if (res.cancelled){
@@ -92,7 +104,6 @@ ipcMain.on("open-target-dialog", async (event) => {
   const selectedDir = res.filePaths[0];
   target_dirs.push(selectedDir);
   
-  // addShortcut(selectedDir, move_file_callback)
   event.reply('open-target-dialog-reply', selectedDir)
 })
 ipcMain.on("open-source-dialog", async (event) => {
@@ -114,7 +125,6 @@ ipcMain.on("open-source-dialog", async (event) => {
 })
 ipcMain.on('move-file', (event, src, dest) => {
   fs.rename(src, dest, ()=> {})
-  // event.reply('move-file-reply');
 })
 ipcMain.on('get-base64-img', async (event, path) => {
   const base64_img = fs.readFileSync(path, {encoding: 'base64'});
@@ -122,7 +132,6 @@ ipcMain.on('get-base64-img', async (event, path) => {
 })
 
 ipcMain.on('set-current-file-path', (event, file_path) => {
-  console.log('was ' + current_file_path)
   current_file_path = file_path
 })
 
@@ -138,15 +147,19 @@ ipcMain.on('trigger-shortcut', (event, shortcut) => {
   if (current_file_path === ''){
     return
   }
-  const idx = shortcut_int - 1;
-  const target_dir = target_dirs[idx];
+  
+  const target_dir = target_dirs[shortcut_int];
   const current_file_parts = current_file_path.split('/');
   const last_idx = current_file_parts.length - 1;
   const file_name = current_file_parts[last_idx];
   const dest_file = `${target_dir}/${file_name}`
   fs.rename(current_file_path, dest_file, () => {})
-  console.log('triggerin shortcut')
+  
   event.reply('trigger-shortcut-reply', current_file_path)
+})
+
+ipcMain.on('get-trash-location', (event) => {
+  event.reply('get-trash-location-reply', tmp_trash_dest)
 })
 
 // Exit cleanly on request from parent process in development mode.

@@ -2,7 +2,7 @@
     <div>
         <destination v-for="(dest, idx) in destinations" 
                     :destination="dest" 
-                    :shortcut_num="idx + 1"
+                    :shortcut_num="idx"
                     v-on:remove-destination="remove_destination"
                     v-on:move-file="move_file"
                     :key="dest.directory_path"></destination>

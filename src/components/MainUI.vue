@@ -4,7 +4,7 @@
     <base-button @click="open_source_dialog">Set Source Folder</base-button>
     <preview :img_display_tag="img_display_tag"></preview>
     <base-button @click="open_target_dialog">Add Destination Folder</base-button>
-    <destination-container :destinations="target_dirs" 
+    <destination-container :destinations="display_target_dirs" 
                             v-on:remove-destination="remove_destination"
                             v-on:move-file="move_file">
                             </destination-container>
@@ -17,7 +17,7 @@ import BaseButton from './BaseButton.vue'
 import Preview from './Preview.vue'
 export default {
 
-  name: 'HelloWorld',
+  name: 'MainUI',
   components: {
     DestinationContainer,
     BaseButton,
@@ -25,7 +25,7 @@ export default {
   },
   data() {
     return {
-      target_dir: '',
+      trash_path: '',
       target_dirs: [],
       source_dir: '',
       img_display_tag: '',
@@ -35,7 +35,7 @@ export default {
   },
   mounted(){
     document.addEventListener('keydown', function (event) {
-    const allowed_keys = ['1','2','3','4','5','6','7','8','9'];
+    const allowed_keys = ['0','1','2','3','4','5','6','7','8','9'];
     if (event.ctrlKey && allowed_keys.includes(event.key)) {
       window.api.trigger_shortcut('myChannel',event.key);
     }
@@ -45,6 +45,7 @@ export default {
         window.api.save_source_dir('myChannel', this.save_source_dir, this.update_source_files)
         window.api.set_base64_img('myChannel', this.set_base64_img)
         window.api.trigger_shortcut_reply('myChannel', this.next_file)
+        window.api.get_trash_location_reply('myChannel', this.set_trash_location)
   },
   computed: {
     current_file_path: function() {
@@ -56,10 +57,23 @@ export default {
        return null;
      }
      return this.files_in_source[this.file_idx]
+   },
+   display_target_dirs: function() {
+     let arr = []
+     if (this.trash_path !== ''){
+       arr.push({directory_path: this.trash_path, label: 'Move to Trash' })
+     }
+     for (const dir of this.target_dirs){
+       arr.push(dir)
+     }
+     return arr;
    }
    
   },
   methods: {
+    set_trash_location(path){
+      this.trash_path = path;
+    },
     remove_destination(dir_path){
       // remove from list
       const directory_idx = this.target_dirs.indexOf(dir_path)
@@ -102,7 +116,6 @@ export default {
       this.next_file()
     },
     save_target_dir(selectedDir) {
-      // this.target_dir = selectedDir
       const dir_obg = {directory_path: selectedDir}
       this.target_dirs.push(dir_obg);
     },

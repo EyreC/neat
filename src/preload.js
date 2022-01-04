@@ -7,18 +7,6 @@ const {
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(
     "api", {
-        test_response: (channel, func) => {
-            console.log('registering test response')
-            ipcRenderer.on('async-reply', (event, arg) => {
-                console.log('exec func for arg: ' + arg)
-                func(arg)
-              })
-        },
-        test_send: (channel, data) => {
-            console.log('test_send')
-            console.log(data)
-            ipcRenderer.send('async-message', 'ping')
-        },
         open_source_dialog: (channel, data) => {
             ipcRenderer.send('open-source-dialog')
         },
@@ -50,12 +38,6 @@ contextBridge.exposeInMainWorld(
                 func(arg)
             })
         },
-        add_shortcut: (channel, dir_path) => {
-            ipcRenderer.send('add-shortcut', dir_path)
-        },
-        remove_shortcut: (channel, dir_path) => {
-            ipcRenderer.send('remove-shortcut', dir_path)
-        },
         
         set_current_file_path: (channel, file_path) => {
             ipcRenderer.send('set-current-file-path', file_path);
@@ -70,6 +52,15 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.on('trigger-shortcut-reply', (event) => {
                 func()
             })
+        },
+        get_trash_location:(channel) => {
+            ipcRenderer.send('get-trash-location')
+        },
+        get_trash_location_reply: (channel, set_trash_func) => {
+            ipcRenderer.on('get-trash-location-reply', (event, path) => {
+                set_trash_func(path)
+            })
+            ipcRenderer.send('get-trash-location')
         }
     
     }
