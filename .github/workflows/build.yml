@@ -28,7 +28,7 @@ jobs:
       run: npm install
     - name: build
 
-      run: npm run electron:build
+      run: npm run electron:build-only
 
   # build_on_win:
   #   runs-on: windows-latest
