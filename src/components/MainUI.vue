@@ -1,6 +1,9 @@
 <template>
   <div>
+    <Progress class="progress" v-if="show_progress > 0" :current="current_idx" :total="source_items_count" :size="200"></Progress>
     <h1 style="color:rgb(52, 235, 225)">Neat</h1>
+
+
     <base-button @click="open_source_dialog">Set Source Folder</base-button>
     <preview :img_display_tag="img_display_tag"></preview>
     <base-button @click="open_target_dialog">Add Destination Folder</base-button>
@@ -8,6 +11,7 @@
                             v-on:remove-destination="remove_destination"
                             v-on:move-file="move_file">
                             </destination-container>
+   
   </div>
 </template>
 
@@ -15,13 +19,15 @@
 import DestinationContainer from './DestinationContainer.vue'
 import BaseButton from './BaseButton.vue'
 import Preview from './Preview.vue'
+import Progress from './Progress.vue'
 export default {
 
   name: 'MainUI',
   components: {
     DestinationContainer,
     BaseButton,
-    Preview
+    Preview,
+    Progress,
   },
   data() {
     return {
@@ -48,6 +54,18 @@ export default {
         window.api.get_trash_location_reply('myChannel', this.set_trash_location)
   },
   computed: {
+    show_progress: function() {
+      return this.source_items_count > 0 && this.img_display_tag !== ""
+    },
+    current_idx: function() {
+      return this.file_idx + 1;
+    },
+    source_items_count: function() {
+      if (this.files_in_source) {
+        return this.files_in_source.length;
+      }
+      return 0;
+    },
     current_file_path: function() {
       const file_path = `${this.source_dir}/${this.current_file_name}`
       return file_path;
@@ -94,7 +112,7 @@ export default {
         // reached end of folder
         // clear existing img
         this.img_display_tag = ''
-        
+        this.reset();
         return;
       }
       this.file_idx = next_idx
@@ -127,7 +145,11 @@ export default {
     },
     open_target_dialog() {
       window.api.open_target_dialog('myChannel')
+    },
+    reset() {
+      this.file_idx = 0;
     }
+
   }
 }
 </script>
@@ -148,5 +170,11 @@ li {
 }
 a {
   color: #42b983;
+}
+.progress {
+  position: fixed;
+  right: 1rem;
+  
+
 }
 </style>
