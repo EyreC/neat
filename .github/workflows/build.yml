@@ -28,7 +28,7 @@ jobs:
       run: npm install
     - name: build
 
-      run: npm run electron:build-only
+      run: npm run electron:build-tags-only
 
   build_on_win:
     env:
@@ -42,4 +42,4 @@ jobs:
     - name: install dependencies
       run: npm install
     - name: build
-      run: npm run electron:build-only
+      run: npm run electron:build-tags-only
